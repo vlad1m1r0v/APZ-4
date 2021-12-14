@@ -1,26 +1,41 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/vlad1m1r0v/APZ-4/commands"
 	"github.com/vlad1m1r0v/APZ-4/engine"
-	"strings"
 )
+
+func parsePrint(args ...string) engine.Command{
+		if len(args) != 1 {
+			 return &commands.PrintCommand{Arg: "SYNTAX ERROR: INAPPROPRIATE AMOUNT OF ARGUMENTS"}
+		}
+		return &commands.PrintCommand{Arg: args[0]}
+
+}
+
+func parseSplit(args ...string) engine.Command{
+		if len(args) != 2 {
+			return &commands.PrintCommand{Arg: "SYNTAX ERROR: INAPPROPRIATE AMOUNT OF ARGUMENTS"}
+		}
+		return &commands.SplitCommand{Str: args[0], Delim: args[1]}
+}
+
+type fn func(args ...string) engine.Command
+
+var parseMap = map[string]fn{
+	"print": parsePrint,
+	"split": parseSplit,
+
+}
 
 func parse(line string) engine.Command {
 	parts := strings.Fields(line)
-	cmd := parts[0]
-
-	if cmd == "print" {
-		if len(parts[1:]) != 1 {
-			 return &commands.PrintCommand{Arg: "SYNTAX ERROR: INAPPROPRIATE AMOUNT OF ARGUMENTS"}
-		}
-		return &commands.PrintCommand{Arg: parts[1]}
+	field := parts[0]
+	args := parts[1:]
+	if fn, ok := parseMap[field]; ok {
+		return fn(args...)
 	}
-	if cmd == "split" {
-		if len(parts[1:]) != 2 {
-			return &commands.PrintCommand{Arg: "SYNTAX ERROR: INAPPROPRIATE AMOUNT OF ARGUMENTS"}
-		}
-		return &commands.SplitCommand{Str: parts[1], Delim: parts[2]}
-	}
-	return &commands.PrintCommand{Arg: "SYNTAX ERROR: UNKNOWN COMMAND"}
+	return &commands.PrintCommand{Arg: "SYNTAX ERROR: INVALID FUNCTION NAME"}
 }
