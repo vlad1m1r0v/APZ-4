@@ -26,12 +26,14 @@ func SetupFile() {
 }
 
 func BenchmarkParser(b *testing.B) {
-    for i := 1; i <= 5; i++ {
+    for i := 1; i <= 20; i++ {
         SetupFile()
         ExtendSplitCommand(i)
         command,_  := ioutil.ReadFile("./example/example-test.txt")
         b.Run(fmt.Sprintf("%d elements", int(math.Pow(2, float64(i)))), func(b *testing.B) {
-            parse(string(command))
+            for i := 0; i < b.N; i++ {
+                parse(string(command))
+            }
         })
     }
 }
